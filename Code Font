@@ -1,0 +1,122 @@
+RELATÓRIO DE MÊS E ANO
+
+    private void Form1_Load(object sender, EventArgs e)
+        {
+            // TODO: esta linha de código carrega dados na tabela 'newdbponto10.Ponto'. Você pode movê-la ou removê-la conforme necessário.
+            this.pontoTableAdapter8.Fill(this.newdbponto10.Ponto);
+            // TODO: esta linha de código carrega dados na tabela 'newdbpontoTeste.Ponto'. Você pode movê-la ou removê-la conforme necessário.
+            
+
+                var query = from c in newdbponto10.Ponto
+                            select new
+                            {
+                                
+                                Nome = c.Nome,
+                                CPF = c.CPF,
+                                Data = c.Data,
+                                HoraSaida = c.HoraSaida,
+                                HoraEntrada = c.HoraEntrada,
+                                Obs = c.Observacao,
+                                HoraTotal = c.HoraTotal
+                                     
+                            };
+
+        }
+
+      
+        Bitmap bmp;
+        private void btnPrint_Click(object sender, EventArgs e)
+        {
+            
+            int height = advancedDataGridView.Height;
+            advancedDataGridView.Height = advancedDataGridView.RowCount * advancedDataGridView.RowTemplate.Height * 1;
+            bmp = new Bitmap(advancedDataGridView.Width, advancedDataGridView.Height);
+            advancedDataGridView.DrawToBitmap(bmp, new Rectangle(15, 0, advancedDataGridView.Width, advancedDataGridView.Height));
+            advancedDataGridView.Height = height;
+            printPreviewDialog1.ShowDialog();
+
+
+        }
+
+        private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        {
+            
+            e.Graphics.DrawImage(bmp, 0, 0);
+
+        }
+
+        private void btnPrintAll_Click(object sender, EventArgs e)
+        {
+            //Mudar o nome da conexão
+            OleDbConnection aConnection = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:");
+
+            aConnection.Open();
+
+
+          OleDbDataAdapter strSql = new OleDbDataAdapter("SELECT * FROM ponto WHERE CPF='"+txtNome.Text+"' AND MONTH(data)='"+ txtDtInicio.Text+"' AND YEAR (data)='"+txtDtFinal.Text+"'  Order by Data", aConnection);// "SELECT Data FROM Ponto WHERE day(data) BETWEEN '" + txtDtInicio.Text + "' AND month(data)'" + txtDtFinal.Text + "' order by Data"         AND Month(data) = '" + txtMes.Text +"'
+
+            DataSet ds = new DataSet();
+            strSql.Fill(ds, "Ponto");
+
+            advancedDataGridView.DataSource = ds.Tables["Ponto"];
+
+            aConnection.Close();
+
+
+            this.printDocument1.DefaultPageSettings.Landscape = true;
+            
+
+        }
+
+        private void advancedDataGridView_SortStringChanged(object sender, EventArgs e)
+        {
+            this.pontoBindingSource9.Sort = this.advancedDataGridView.SortString;
+        }
+
+        private void advancedDataGridView_FilterStringChanged(object sender, EventArgs e)
+        {
+            this.pontoBindingSource9.Filter = this.advancedDataGridView.FilterString;
+        }
+
+
+        private void advancedDataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            this.advancedDataGridView.SelectionMode =
+            DataGridViewSelectionMode.FullRowSelect;
+            this.advancedDataGridView.MultiSelect = false;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string strSql = "SELECT * FROM Ponto";
+                
+                //Mudar o nome da conexão
+                OleDbConnection aConnection = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:");
+
+      
+
+                OleDbCommand cmd = new OleDbCommand(strSql, aConnection);
+
+                aConnection.Open();
+
+                cmd.CommandType = CommandType.Text;
+
+                OleDbDataAdapter da = new OleDbDataAdapter(cmd);
+
+                DataTable CPF = new DataTable();
+
+                da.Fill(CPF);
+
+                advancedDataGridView.DataSource = CPF;
+
+                aConnection.Close();
+            }
+            catch (Exception erro)
+            {
+                MessageBox.Show(erro.Message);
+            }
+        }
+    }
+}
